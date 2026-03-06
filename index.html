@@ -1,4 +1,14 @@
-<style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4GJPJ9JD54"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4GJPJ9JD54');
+</script>
+
+<div class="layout">
+  
+  <style>
   body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
   .layout { display: flex; gap: 20px; max-width: 1200px; margin: auto; height: 85vh; }
   
@@ -28,13 +38,13 @@
     
     <div class="controls">
       <select id="voiceSelect"><option>Loading voices...</option></select>
-      <button onclick="doAnalysis()">Analyze & Speak 🔊</button>
+      <button onclick="gtag('event', 'click_analyze', {'event_category': 'usage'}); doAnalysis();">Analyze & Speak 🔊</button>
     </div>
 
     <div id="result">The breakdown will appear here...</div>
     <h10>Copyright © 2026 [Catherine N.C.L]. All Rights Reserved.
 
-No part of this application, including code, questions, and graphical assets, may be reproduced, distributed, or transmitted in any form or by any means without the prior written permission of the author.</h10>
+No part of this application, including code, questions, and graphical assets, may be reproduced, distributed, or transmitted in any form or by any means without the prior written permission of the author.</h8>
   </div>
 
   <div class="tracker-panel">
