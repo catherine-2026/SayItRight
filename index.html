@@ -1,0 +1,115 @@
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+  .layout { display: flex; gap: 20px; max-width: 1200px; margin: auto; height: 85vh; }
+  
+  /* MAIN PANEL */
+  .main-panel { flex: 2; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+  textarea { height: 100px; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 10px; resize: none; }
+  
+  /* TRACKER SIDEBAR */
+  .tracker-panel { flex: 1; background: #ffffff; padding: 20px; border-radius: 15px; border-left: 5px solid #27ae60; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+  .history-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; display: flex; justify-content: space-between; }
+  .history-item b { color: #27ae60; }
+
+  /* BUTTONS & SELECT */
+  .controls { display: flex; gap: 10px; margin: 20px 0; align-items: center; }
+  select { padding: 10px; flex: 1; border-radius: 5px; border: 1px solid #ccc; }
+  button { padding: 12px 20px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  
+  /* STRESS STYLE */
+  #result { flex-grow: 1; padding: 20px; background: #fafafa; border-radius: 10px; line-height: 2.5; }
+  .stressed { background: red !important; color: white !important; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
+</style>
+
+<div class="layout">
+  <div class="main-panel">
+    <h2>Say It Right: Stress Highlighter & Voice Lab🗣️</h2>
+    <textarea id="textIn" placeholder="Enter word or sentence..."></textarea>
+    
+    <div class="controls">
+      <select id="voiceSelect"><option>Loading voices...</option></select>
+      <button onclick="doAnalysis()">Analyze & Speak 🔊</button>
+    </div>
+
+    <div id="result">The breakdown will appear here...</div>
+    <h10>Copyright © 2026 [Catherine N.C.L]. All Rights Reserved.
+
+No part of this application, including code, questions, and graphical assets, may be reproduced, distributed, or transmitted in any form or by any means without the prior written permission of the author.</h10>
+  </div>
+
+  <div class="tracker-panel">
+    <h3>📝 Practice History</h3>
+    <div id="historyList">
+      <p style="color:#999 italic">No words tracked yet.</p>
+    </div>
+    <button onclick="clearHistory()" style="background:#666; width:100%; margin-top:20px;">Clear History</button>
+    
+  </div>
+</div>
+
+<script>
+  let voices = [];
+  const synth = window.speechSynthesis;
+
+  function loadVoices() {
+    voices = synth.getVoices();
+    const select = document.getElementById('voiceSelect');
+    select.innerHTML = '';
+    voices.forEach(v => {
+      const opt = document.createElement('option');
+      opt.textContent = `${v.name} (${v.lang})`;
+      opt.value = v.name;
+      select.appendChild(opt);
+    });
+  }
+
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  setTimeout(loadVoices, 500);
+
+  function doAnalysis() {
+    const input = document.getElementById('textIn').value.trim();
+    if (!input) return;
+
+    // 1. ANALYSIS & DISPLAY
+    const words = input.split(/\s+/);
+    let html = "";
+    words.forEach(word => {
+      const clean = word.toLowerCase().replace(/[^a-z]/g, "");
+      const syls = clean.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy](?![aeiouy]))*/g) || [clean];
+      html += `<span style="margin-right:15px;">`;
+      syls.forEach((s, i) => {
+        let isStressed = (syls.length <= 2 && i === 0) || (syls.length > 2 && i === syls.length - 2);
+        html += `<span class="${isStressed ? 'stressed' : ''}">${s}</span>${i < syls.length - 1 ? "-" : ""}`;
+      });
+      html += `</span>`;
+    });
+    document.getElementById('result').innerHTML = html;
+
+    // 2. SPEECH
+    const utter = new SpeechSynthesisUtterance(input);
+    const selectedVoiceName = document.getElementById('voiceSelect').value;
+    utter.voice = voices.find(v => v.name === selectedVoiceName);
+    synth.speak(utter);
+
+    // 3. TRACKER LOGIC
+    addToTracker(input, utter.voice ? utter.voice.name : "Default");
+  }
+
+  function addToTracker(text, voiceName) {
+    const list = document.getElementById('historyList');
+    if (list.querySelector('p')) list.innerHTML = ''; // Clear placeholder
+    
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    item.innerHTML = `<span><b>${text}</b></span> <i style="font-size:10px">${voiceName.slice(0,10)}... [${time}]</i>`;
+    list.prepend(item); // Add to top
+  }
+
+  function clearHistory() {
+    document.getElementById('historyList').innerHTML = '<p style="color:#999">History cleared.</p>';
+  }
+</script>
